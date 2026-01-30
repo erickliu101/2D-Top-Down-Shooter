@@ -1,7 +1,9 @@
 public enum CropType
 {
-    Wheat,
     Carrot,
     Corn,
-    Potato
+    Peas,
+    Grapes,
+    Watermelon
+    
 }

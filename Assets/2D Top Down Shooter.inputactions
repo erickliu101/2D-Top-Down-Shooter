@@ -34,7 +34,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "SpawnWheat",
+                    "name": "SpawnCarrot",
                     "type": "Button",
                     "id": "23e468f9-ed3f-482f-a1f5-012cf2a790c0",
                     "expectedControlType": "",
@@ -280,7 +280,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
-                    "action": "SpawnWheat",
+                    "action": "SpawnCarrot",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

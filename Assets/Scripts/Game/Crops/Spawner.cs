@@ -7,7 +7,7 @@ public class Spawner : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Tilemap tilemap;
-    [SerializeField] private GameObject wheatPrefab;
+    [SerializeField] private GameObject carrotPrefab;
     [SerializeField] private Transform player;
 
     private PlayerMovement playerMovement;
@@ -15,6 +15,8 @@ public class Spawner : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float spawnOffset = 0.1f;
     [SerializeField] private float cropLifetime = 13f;
+    [SerializeField] private float harvestRadius = 1f;
+    [SerializeField] private float minHarvestAge = 3f;
 
     private List<SpawnedCrop> activeCrops = new List<SpawnedCrop>();
     private struct SpawnedCrop
@@ -34,7 +36,16 @@ public class Spawner : MonoBehaviour
             return;
 
         Debug.Log("Spawner: Z pressed (Spawn action received)");
-        TrySpawnWheat();
+        TrySpawnCarrot();
+    }
+
+    public void Harvest(InputAction.CallbackContext context)
+    {
+        if (!context.performed)
+            return;
+
+        Debug.Log("Spawner: Space pressed (Harvest action received)");
+        TryHarvestCrop();
     }
 
     private void Update()
@@ -55,7 +66,76 @@ public class Spawner : MonoBehaviour
         return false;
     }
 
-    private void TrySpawnWheat()
+    private void TryHarvestCrop()
+    {
+        if (activeCrops.Count == 0)
+        {
+            Debug.Log("Spawner: No crops exist to harvest.");
+            return;
+        }
+
+        Vector3 playerPos = player.position;
+
+        float closestDist = float.MaxValue;
+        int closestIndex = -1;
+
+        Debug.Log("Spawner: Checking crops within harvest radius...");
+
+        for (int i = 0; i < activeCrops.Count; i++)
+        {
+            if (activeCrops[i].crop == null)
+                continue;
+
+            float dist = Vector3.Distance(
+                playerPos,
+                activeCrops[i].crop.transform.position
+            );
+
+            Debug.Log(
+                $"Detected crop [{i}] " +
+                $"Type={activeCrops[i].crop.cropType}, " +
+                $"Distance={dist:0.00}"
+            );
+
+            float age = Time.time - activeCrops[i].spawnTime;
+            if (dist <= harvestRadius)
+            {
+                Debug.Log(
+                    $"→ In range | Age={age:0.00}s " +
+                    $"(Min required={minHarvestAge}s)"
+                );
+
+                if (age < minHarvestAge)
+                {
+                    Debug.Log("Crop too young to harvest, skipping.");
+                    continue;
+                }
+
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestIndex = i;
+                }
+            }
+        }
+
+        if (closestIndex == -1)
+        {
+            Debug.Log("Spawner: No crops close enough to harvest.");
+            return;
+        }
+
+        Debug.Log(
+            $"Spawner: Harvesting crop " +
+            $"{activeCrops[closestIndex].crop.name} " +
+            $"at distance {closestDist:0.00}"
+        );
+
+        Destroy(activeCrops[closestIndex].crop.gameObject);
+        activeCrops.RemoveAt(closestIndex);
+    }
+
+    private void TrySpawnCarrot()
     {
         Vector2 lastDir = playerMovement.GetLastMoveDirection();
 
@@ -82,16 +162,16 @@ public class Spawner : MonoBehaviour
             if (r != null && r.sortingLayerName == "Collision")
                 return;
         }
-        if (HasActiveCropType(CropType.Wheat))
-            Debug.Log("Spawner: Existing Wheat detected, spawn prevented");
+        if (HasActiveCropType(CropType.Carrot))
+            Debug.Log("Spawner: Existing Carrot detected, spawn prevented");
             DebugActiveCrops();
 
-        if (HasActiveCropType(CropType.Wheat))
+        if (HasActiveCropType(CropType.Carrot))
             return;
 
-        GameObject wheatObj = Instantiate(wheatPrefab, cellCenter, Quaternion.identity);
+        GameObject CarrotObj = Instantiate(carrotPrefab, cellCenter, Quaternion.identity);
 
-        Crop crop = wheatObj.GetComponent<Crop>();
+        Crop crop = CarrotObj.GetComponent<Crop>();
 
         activeCrops.Add(new SpawnedCrop
         {
