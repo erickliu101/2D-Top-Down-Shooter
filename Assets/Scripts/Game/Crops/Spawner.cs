@@ -9,6 +9,7 @@ public class Spawner : MonoBehaviour
     [SerializeField] private Tilemap tilemap;
     [SerializeField] private GameObject carrotPrefab;
     [SerializeField] private Transform player;
+    private HeldProjectile heldProjectile;
 
     private PlayerMovement playerMovement;
 
@@ -68,6 +69,13 @@ public class Spawner : MonoBehaviour
 
     private void TryHarvestCrop()
     {
+
+        if (heldProjectile != null)
+        {
+            Debug.Log("Spawner: Already holding a projectile, cannot harvest.");
+            return;
+        }
+
         if (activeCrops.Count == 0)
         {
             Debug.Log("Spawner: No crops exist to harvest.");
@@ -107,7 +115,7 @@ public class Spawner : MonoBehaviour
 
                 if (age < minHarvestAge)
                 {
-                    Debug.Log("Crop too young to harvest, skipping.");
+                    Debug.Log("too young to harvest, skipping.");
                     continue;
                 }
 
