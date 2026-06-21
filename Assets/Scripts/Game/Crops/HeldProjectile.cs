@@ -29,6 +29,21 @@ public abstract class HeldProjectile : MonoBehaviour
             Physics2D.IgnoreCollision(myCol, playerCol);
         }
     }
-    // Future
-    public abstract void Throw(Vector2 direction, float force);
+    public override void Throw(Vector2 direction, float force)
+    {
+        isHeld = false;
+
+        transform.SetParent(null);
+
+        float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0f, 0f, angle);
+
+        if (rb != null)
+        {
+            rb.simulated = true;
+            rb.linearVelocity = direction.normalized * throwSpeed;
+        }
+
+        Debug.Log($"{name}: Thrown in direction {direction}");
+    }
 }
